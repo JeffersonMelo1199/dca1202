@@ -1,0 +1,161 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include "sculptor.h"
+
+using namespace std;
+
+
+Sculptor::Sculptor(int _nx, int _ny, int _nz){
+    int nx=_nx, ny=_ny, nz=_nz;
+
+    v=new Voxel**[nx];
+    if( v == NULL){
+        cout << "new error\n";
+    }
+    v[0]=new Voxel*[nx*ny];
+    if( v[0] == NULL){
+        cout << "new error\n";
+    }
+    v[0][0]=new Voxel[nx*ny*nz];
+    if( v[0][0] == NULL){
+        cout << "new error\n";
+    }
+
+    for(int i=0; i< nx; i++){
+        if (i<(nx-1)){
+            v[i+1] = v[i]+ny;
+        }
+        for(int j=1; j< ny; j++){
+            v[i][j] = v[i][j-1]+nz;
+            if(j==ny-1 && i!=(nx-1)){
+                v[i+1][0] = v[i][j]+nz;
+            }
+        }
+    }
+    for(int i = 0; i < nx; i++){
+        for(int j = 0; j < ny; j++){
+            for(int k = 0; k < nz; k++){
+                v[i][j][k].isOn=false;
+            }
+        }
+    }
+    cout<< "construtor padrao" << endl;
+}
+
+
+Sculptor::~Sculptor(){
+    delete [] v[0][0];
+    delete [] v[0];
+    delete [] v;
+    cout << "destrutor padrao" << endl;
+}
+void Sculptor::setColor(float r, float g, float b, float alpha){
+    this->r=r;
+    this->g=g;
+    this->b=b;
+    a=alpha;
+}
+void Sculptor::putVoxel(int x, int y, int z){
+    if(x<=nx && y<=ny && z<=nz && x>=0 && y>= 0 && z>=0){
+        v[x][y][z].isOn=true;
+        v[x][y][z].r=r;
+        v[x][y][z].g=g;
+        v[x][y][z].b=b;
+        v[x][y][z].a=a;
+    }
+}
+
+void Sculptor::cutVoxel(int x, int y, int z){
+    if(x<=nx && y<=ny && z<=nz && x>=0 && y>= 0 && z>=0){
+        v[x][y][z].isOn=false;
+    }
+}
+void Sculptor::putBox(int x0, int x1, int y0, int y1, int z0, int z1){
+    if(x0>=0 && y0>=0 && z0>=0 && x0<nx && y0<ny && z0<nz && x1>=0 && y1>=0 && z1>=0 && x1<nx && y1<ny && z1<nz){
+        for(int i = x0; i<=x1; i++)
+        {
+            for(int j = y0; j<=y1; j++)
+            {
+                for(int k = z0; k<=z1;k++)
+                {
+                    v[i][j][k].r = r;
+                    v[i][j][k].g = g;
+                    v[i][j][k].b = b;
+                    v[i][j][k].a = a;
+                    v[i][j][k].isOn = true;
+                }
+            }
+        }
+    }
+}
+void Sculptor::cutBox(int x0, int x1, int y0, int y1, int z0, int z1){
+    int i, j, k;
+
+    for(i=x0; i<x1; i++){
+        for(j=y0; j<y1; j++){
+            for(k=z0; k<z1; k++){
+                v[i][j][k].isOn=true;
+            }
+        }
+    }
+}
+//void Sculptor::putSphere(int xcenter, int ycenter, int zcenter, int radius){}
+//void Sculptor::cutSphere(int xcenter, int ycenter, int zcenter, int radius){}
+//void Sculptor::putEllipsoid(int xcenter, int ycenter, int zcenter, int rx, int ry, int rz){}
+//void Sculptor::cutEllipsoid(int xcenter, int ycenter, int zcenter, int rx, int ry, int rz){}
+
+void Sculptor::writeOFF(char* filename){
+    int n_vertices = 0, n_faces = 0, n_arestas = 0;
+    ofstream fileout;
+    fileout.open(filename);
+    if(!fileout.is_open()){
+        exit(0);
+    }
+    for(int i = 0; i < nx; i++){
+        for(int j = 0; j < ny; j++){
+            for(int k = 0; k < nz; k++){
+                if(v[i][j][k].isOn){
+                    n_vertices += 8;
+                    n_faces += 6;
+                }
+            }
+        }
+    }
+    fileout<<"OFF"<<endl;
+    fileout<<n_vertices<<" "<<n_faces<<" "<<n_arestas<<endl;
+
+    for(int i = 0; i < nx; i++){
+        for(int j = 0; j < ny; j++){
+            for(int k = 0; k < nz; k++){
+                if(v[i][j][k].isOn){
+                    fileout<<i-0.5<<" "<<j+0.5<<" "<<k-0.5<<endl;
+                    fileout<<i-0.5<<" "<<j-0.5<<" "<<k-0.5<<endl;
+                    fileout<<i+0.5<<" "<<j-0.5<<" "<<k-0.5<<endl;
+                    fileout<<i+0.5<<" "<<j+0.5<<" "<<k-0.5<<endl;
+                    fileout<<i-0.5<<" "<<j+0.5<<" "<<k+0.5<<endl;
+                    fileout<<i-0.5<<" "<<j-0.5<<" "<<k+0.5<<endl;
+                    fileout<<i+0.5<<" "<<j-0.5<<" "<<k+0.5<<endl;
+                    fileout<<i+0.5<<" "<<j+0.5<<" "<<k+0.5<<endl;
+                }
+            }
+        }
+    }
+    int aux = 0;
+    for(int i = 0; i < nx; i++){
+        for(int j = 0; j < ny; j++){
+            for(int k = 0; k < nz; k++){
+                if(v[i][j][k].isOn){
+                    fileout<<"4 "<<0+8*aux<<" "<<3+8*aux<<" "<<2+8*aux<<" "<<1+8*aux<<" "<<v[i][j][k].r<<" "<<v[i][j][k].g<<" "<<v[i][j][k].b<<" "<<v[i][j][k].a<<endl;
+                    fileout<<"4 "<<4+8*aux<<" "<<5+8*aux<<" "<<6+8*aux<<" "<<7+8*aux<<" "<<v[i][j][k].r<<" "<<v[i][j][k].g<<" "<<v[i][j][k].b<<" "<<v[i][j][k].a<<endl;
+                    fileout<<"4 "<<0+8*aux<<" "<<1+8*aux<<" "<<5+8*aux<<" "<<4+8*aux<<" "<<v[i][j][k].r<<" "<<v[i][j][k].g<<" "<<v[i][j][k].b<<" "<<v[i][j][k].a<<endl;
+                    fileout<<"4 "<<0+8*aux<<" "<<4+8*aux<<" "<<7+8*aux<<" "<<3+8*aux<<" "<<v[i][j][k].r<<" "<<v[i][j][k].g<<" "<<v[i][j][k].b<<" "<<v[i][j][k].a<<endl;
+                    fileout<<"4 "<<3+8*aux<<" "<<7+8*aux<<" "<<6+8*aux<<" "<<2+8*aux<<" "<<v[i][j][k].r<<" "<<v[i][j][k].g<<" "<<v[i][j][k].b<<" "<<v[i][j][k].a<<endl;
+                    fileout<<"4 "<<1+8*aux<<" "<<2+8*aux<<" "<<6+8*aux<<" "<<5+8*aux<<" "<<v[i][j][k].r<<" "<<v[i][j][k].g<<" "<<v[i][j][k].b<<" "<<v[i][j][k].a<<endl;
+                    aux++;
+                }
+            }
+        }
+    }
+    fileout.close();
+}
