@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 #include "sculptor.h"
 
 
@@ -23,8 +24,8 @@ int main()
     //a.cutEllipsoid(50,35,70,22,15,17);
 
 
-    char* filename;
-    filename = "C:/Users/Jefferson Melo/Desktop/Escultor Digital/a.off";
+    
+    string filename = "C:/Users/UFRNLAB/Documents/untitled/a.off";
     a.writeOFF(filename);
 
 
