@@ -1,6 +1,7 @@
 #ifndef ESCULTOR_H
 #define ESCULTOR_H
-
+#include <string>
+using namespace std;
 
 struct Voxel {
   float r,g,b; // Colors
@@ -24,6 +25,6 @@ public:
   void cutSphere(int xcenter, int ycenter, int zcenter, int radius);
   void putEllipsoid(int xcenter, int ycenter, int zcenter, int rx, int ry, int rz);
   void cutEllipsoid(int xcenter, int ycenter, int zcenter, int rx, int ry, int rz);
-  void writeOFF(char * filename);
+  void writeOFF(string filename);
 };
 #endif // ESCULTOR_H
