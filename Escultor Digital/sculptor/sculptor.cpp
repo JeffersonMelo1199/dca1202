@@ -183,7 +183,7 @@ void Sculptor::cutEllipsoid(int xcenter, int ycenter, int zcenter, int rx, int r
     }
 }
 // gera o arquivo OFF com base nos metodos da classe sculptor utilizados
-void Sculptor::writeOFF(char* filename){
+void Sculptor::writeOFF(string filename){
     int NV = 0, NF = 0;
     int i,j,k;
     // variavel para efetuar as funções de fluxos de dados
